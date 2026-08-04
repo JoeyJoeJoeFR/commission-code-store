@@ -1,0 +1,2 @@
+Staff: staff@codestore.com / staff123
+IT: it@codestore.com / it123
