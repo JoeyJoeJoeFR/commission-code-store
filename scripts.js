@@ -179,6 +179,8 @@ const registerName = document.getElementById('registerName');
 const registerEmail = document.getElementById('registerEmail');
 const registerPassword = document.getElementById('registerPassword');
 const accountStatus = document.getElementById('accountStatus');
+const authGate = document.getElementById('authGate');
+const pageContainer = document.querySelector('.page');
 const accountInfo = document.getElementById('accountInfo');
 const logoutBtn = document.getElementById('logoutBtn');
 const languageGrid = document.getElementById('languageGrid');
@@ -210,8 +212,12 @@ function getDiscountPercent() {
   return 0;
 }
 
+function getUserCart() {
+  return state.currentUser ? state.currentUser.cart || [] : state.cart;
+}
+
 function getCartSubtotal() {
-  return state.cart.reduce((sum, item) => sum + item.price, 0);
+  return getUserCart().reduce((sum, item) => sum + item.price * item.quantity, 0);
 }
 
 function getCartDiscount() {
@@ -224,6 +230,10 @@ function getCartTotal() {
 
 function getCurrentUserOrders() {
   return state.currentUser?.orders || [];
+}
+
+function getCurrentUserTickets() {
+  return state.currentUser?.supportTickets || [];
 }
 
 function saveAccount(user) {
@@ -243,7 +253,12 @@ function loadAccount() {
   if (!raw) return null;
   try {
     const user = JSON.parse(raw);
-    return { ...user, orders: user.orders || [] };
+    return {
+      ...user,
+      orders: user.orders || [],
+      supportTickets: user.supportTickets || [],
+      cart: user.cart || []
+    };
   } catch (error) {
     return null;
   }
@@ -356,11 +371,18 @@ function renderStore() {
     button.addEventListener('click', () => {
       const item = prebuiltItems.find(product => product.id === button.dataset.id);
       if (!item) return;
-      const existing = state.cart.find(entry => entry.id === item.id);
+      const cart = getUserCart();
+      const existing = cart.find(entry => entry.id === item.id);
       if (existing) {
         existing.quantity += 1;
       } else {
-        state.cart.push({ ...item, quantity: 1 });
+        cart.push({ ...item, quantity: 1 });
+      }
+      if (state.currentUser) {
+        state.currentUser.cart = cart;
+        saveAccount(state.currentUser);
+      } else {
+        state.cart = cart;
       }
       renderCart();
       setTab('store');
@@ -417,8 +439,9 @@ function renderLanguages() {
 }
 
 function renderCart() {
-  cartCount.textContent = `${state.cart.reduce((sum, item) => sum + item.quantity, 0)} items`;
-  if (state.cart.length === 0) {
+  const cart = getUserCart();
+  cartCount.textContent = `${cart.reduce((sum, item) => sum + item.quantity, 0)} items`;
+  if (cart.length === 0) {
     cartItems.innerHTML = '<div class="cart-empty">Your cart is empty. Add a product to get started.</div>';
     subtotalValue.textContent = formatCurrency(0);
     discountValue.textContent = formatCurrency(0);
@@ -426,7 +449,7 @@ function renderCart() {
     return;
   }
 
-  cartItems.innerHTML = state.cart
+  cartItems.innerHTML = cart
     .map(item => `
       <div class="cart-item">
         <strong>${item.title}</strong>
@@ -516,11 +539,18 @@ function openModal(title, body) {
     button.addEventListener('click', () => {
       const item = prebuiltItems.find(product => product.id === button.dataset.addProduct);
       if (!item) return;
-      const existing = state.cart.find(entry => entry.id === item.id);
+      const cart = getUserCart();
+      const existing = cart.find(entry => entry.id === item.id);
       if (existing) {
         existing.quantity += 1;
       } else {
-        state.cart.push({ ...item, quantity: 1 });
+        cart.push({ ...item, quantity: 1 });
+      }
+      if (state.currentUser) {
+        state.currentUser.cart = cart;
+        saveAccount(state.currentUser);
+      } else {
+        state.cart = cart;
       }
       renderCart();
       closeModal();
@@ -556,11 +586,21 @@ function renderAccount() {
 
 function setAuthView(view) {
   state.authView = view;
-  document.querySelectorAll('.auth-toggle button').forEach(button => {
+  document.querySelectorAll('#authGate .auth-toggle button, .account-grid .auth-toggle button').forEach(button => {
     button.classList.toggle('active', button.dataset.authView === view);
   });
   loginForm.hidden = view !== 'login';
   registerForm.hidden = view !== 'register';
+}
+
+function setAuthGate(open) {
+  authGate.hidden = !open;
+  pageContainer.hidden = open;
+  if (open) {
+    document.body.classList.add('locked');
+  } else {
+    document.body.classList.remove('locked');
+  }
 }
 
 function renderOrders() {
@@ -631,28 +671,36 @@ function renderOrders() {
           return;
         }
         order.status = 'Cancellation Requested';
-        state.supportTickets.unshift({
+        const ticket = {
           id: `SUP-${Math.floor(1000 + Math.random() * 9000)}`,
           orderId: order.id,
           type: 'cancel',
           message: `Cancellation requested for ${order.title}.`,
           status: 'Open',
           date: new Date().toISOString().split('T')[0]
-        });
+        };
+        if (!state.currentUser.supportTickets) {
+          state.currentUser.supportTickets = [];
+        }
+        state.currentUser.supportTickets.unshift(ticket);
       } else if (button.dataset.action === 'refund') {
         if (order.status === 'Refund Pending' || order.status === 'Refunded') {
           alert('A refund request is already in progress for this order.');
           return;
         }
         order.status = 'Refund Pending';
-        state.supportTickets.unshift({
+        const ticket = {
           id: `SUP-${Math.floor(1000 + Math.random() * 9000)}`,
           orderId: order.id,
           type: 'refund',
           message: `Refund requested for ${order.title}.`,
           status: 'Open',
           date: new Date().toISOString().split('T')[0]
-        });
+        };
+        if (!state.currentUser.supportTickets) {
+          state.currentUser.supportTickets = [];
+        }
+        state.currentUser.supportTickets.unshift(ticket);
       }
       if (state.currentUser) {
         state.currentUser.orders = currentOrders;
@@ -666,12 +714,13 @@ function renderOrders() {
 }
 
 function renderSupport() {
-  if (state.supportTickets.length === 0) {
+  const tickets = getCurrentUserTickets();
+  if (tickets.length === 0) {
     supportList.innerHTML = '<div class="orders-empty">No support requests yet.</div>';
     return;
   }
 
-  supportList.innerHTML = state.supportTickets
+  supportList.innerHTML = tickets
     .map(ticket => `
       <div class="support-card">
         <div class="meta-line">
@@ -693,9 +742,14 @@ function renderSupport() {
 
   supportList.querySelectorAll('button[data-ticket-action="resolve"]').forEach(button => {
     button.addEventListener('click', () => {
-      const ticket = state.supportTickets.find(item => item.id === button.dataset.id);
+      const tickets = getCurrentUserTickets();
+      const ticket = tickets.find(item => item.id === button.dataset.id);
       if (!ticket) return;
       ticket.status = 'Resolved';
+      if (state.currentUser) {
+        state.currentUser.supportTickets = tickets;
+        saveAccount(state.currentUser);
+      }
       renderSupport();
     });
   });
@@ -729,13 +783,14 @@ checkoutBtn.addEventListener('click', () => {
     return;
   }
 
-  if (state.cart.length === 0) {
+  const cart = getUserCart();
+  if (cart.length === 0) {
     alert('Add at least one product to your cart before checking out.');
     return;
   }
 
   const total = getCartTotal();
-  const itemTitles = state.cart.map(item => item.title).join(', ');
+  const itemTitles = cart.map(item => item.title).join(', ');
   openModal('Checkout', `
     <form id="checkoutForm" class="form-group">
       <div class="field-row">
@@ -783,6 +838,7 @@ checkoutBtn.addEventListener('click', () => {
       return;
     }
 
+    const cart = getUserCart();
     const newOrder = {
       id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
       title: `Cart Checkout (${itemTitles})`,
@@ -794,8 +850,8 @@ checkoutBtn.addEventListener('click', () => {
       notes: `${method} • ${notes || 'No additional notes'}`
     };
     state.currentUser.orders.unshift(newOrder);
+    state.currentUser.cart = [];
     saveAccount(state.currentUser);
-    state.cart = [];
     renderCart();
     renderOrders();
     closeModal();
@@ -863,11 +919,31 @@ loginForm.addEventListener('submit', event => {
     alert('No account found for that email and password.');
     return;
   }
-  state.currentUser = { ...user, orders: user.orders || [] };
+  state.currentUser = {
+    ...user,
+    orders: user.orders || [],
+    supportTickets: user.supportTickets || [],
+    cart: user.cart || []
+  };
+  if (state.cart.length > 0) {
+    const existingCart = state.currentUser.cart || [];
+    state.currentUser.cart = [...existingCart];
+    state.cart.forEach(item => {
+      const existing = state.currentUser.cart.find(cartItem => cartItem.id === item.id);
+      if (existing) {
+        existing.quantity += item.quantity;
+      } else {
+        state.currentUser.cart.push(item);
+      }
+    });
+    state.cart = [];
+  }
   saveAccount(state.currentUser);
   renderAccount();
   renderOrders();
-  setTab('account');
+  renderCart();
+  setAuthGate(false);
+  setTab('store');
 });
 
 registerForm.addEventListener('submit', event => {
@@ -891,21 +967,31 @@ registerForm.addEventListener('submit', event => {
     email,
     password,
     joined: new Date().toISOString().split('T')[0],
-    orders: []
+    orders: [],
+    supportTickets: [],
+    cart: []
   };
   accounts.push(newUser);
   localStorage.setItem('codeStoreAccounts', JSON.stringify(accounts));
   state.currentUser = newUser;
-  saveAccount(newUser);
+  if (state.cart.length > 0) {
+    state.currentUser.cart = [...state.cart];
+    state.cart = [];
+  }
+  saveAccount(state.currentUser);
   renderAccount();
   renderOrders();
-  setTab('account');
+  renderCart();
+  setAuthGate(false);
+  setTab('store');
 });
 
 logoutBtn.addEventListener('click', () => {
   state.currentUser = null;
   localStorage.removeItem('codeStoreAccount');
   renderAccount();
+  setAuthGate(true);
+  setAuthView('login');
 });
 
 document.querySelectorAll('.auth-toggle button').forEach(button => {
@@ -945,14 +1031,20 @@ supportForm.addEventListener('submit', event => {
     order.status = 'Cancellation Requested';
   }
 
-  state.supportTickets.unshift({
+  const ticket = {
     id: `SUP-${Math.floor(1000 + Math.random() * 9000)}`,
     orderId: order.id,
     type: supportType.value,
     message,
     status: 'Open',
     date: new Date().toISOString().split('T')[0]
-  });
+  };
+
+  if (!state.currentUser.supportTickets) {
+    state.currentUser.supportTickets = [];
+  }
+  state.currentUser.supportTickets.unshift(ticket);
+  saveAccount(state.currentUser);
 
   supportMessage.value = '';
   renderOrders();
@@ -981,6 +1073,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderAccount();
   setAuthView('login');
   setTab('store');
+  setAuthGate(!state.currentUser);
   initNightSky();
 });
 

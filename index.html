@@ -8,6 +8,54 @@
   </head>
   <body>
     <div id="night-sky" class="night-sky"></div>
+    <section class="auth-gate" id="authGate">
+      <div class="auth-card auth-gate-card">
+        <div class="brand" style="justify-content: center; text-align: center; gap: 0.85rem; margin-bottom: 1.5rem;">
+          <div class="brand-icon">C</div>
+          <div>
+            <h1 class="brand-title" style="font-size: clamp(2rem, 4vw, 3rem);">Code Store Login</h1>
+            <p class="brand-subtitle">Sign in or create an account to access the store and manage your orders.</p>
+          </div>
+        </div>
+        <div class="auth-toggle" style="justify-content: center; margin-bottom: 1.2rem;">
+          <button class="mini-action active" type="button" data-auth-view="login">Sign In</button>
+          <button class="mini-action" type="button" data-auth-view="register">Create Account</button>
+        </div>
+        <form id="loginForm" class="form-group">
+          <div class="field-row">
+            <div>
+              <label>Email</label>
+              <input type="email" id="loginEmail" required />
+            </div>
+            <div>
+              <label>Password</label>
+              <input type="password" id="loginPassword" required />
+            </div>
+          </div>
+          <button type="submit">Sign In</button>
+        </form>
+        <form id="registerForm" class="form-group" hidden>
+          <div class="field-row">
+            <div>
+              <label>Full name</label>
+              <input type="text" id="registerName" required />
+            </div>
+            <div>
+              <label>Email</label>
+              <input type="email" id="registerEmail" required />
+            </div>
+          </div>
+          <div class="field-row">
+            <div>
+              <label>Password</label>
+              <input type="password" id="registerPassword" required />
+            </div>
+          </div>
+          <button type="submit">Create your account</button>
+        </form>
+        <p class="auth-note">Your account is stored locally in your browser for this demo site. This page must be completed before accessing the marketplace.</p>
+      </div>
+    </section>
     <div class="page">
       <section class="topbar">
         <div class="brand">
