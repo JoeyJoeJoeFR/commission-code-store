@@ -3,6 +3,8 @@ const tabs = [
   { id: 'commission', title: 'Order Custom Code', subtitle: 'Submit a custom software request.' },
   { id: 'orders', title: 'My Orders', subtitle: 'Review your active commissions and purchases.' },
   { id: 'languages', title: 'Languages', subtitle: 'Explore coding language resources.' },
+  { id: 'staff', title: 'Staff', subtitle: 'Handle incoming orders and hand them to IT.' },
+  { id: 'it', title: 'IT Dept', subtitle: 'Build, test, and return finished code work.' },
   { id: 'account', title: 'Account', subtitle: 'Log in, register, and manage your profile.' },
   { id: 'support', title: 'Support', subtitle: 'Manage refunds, cancellations, and help requests.' }
 ];
@@ -128,7 +130,8 @@ const state = {
   cart: [],
   supportTickets: [],
   currentUser: null,
-  authView: 'login'
+  authView: 'login',
+  workflowOrders: []
 };
 
 const tabButtons = document.getElementById('tabButtons');
@@ -140,6 +143,8 @@ const storePanel = document.getElementById('storePanel');
 const commissionPanel = document.getElementById('commissionPanel');
 const ordersPanel = document.getElementById('ordersPanel');
 const languagesPanel = document.getElementById('languagesPanel');
+const staffPanel = document.getElementById('staffPanel');
+const itPanel = document.getElementById('itPanel');
 const accountPanel = document.getElementById('accountPanel');
 const supportPanel = document.getElementById('supportPanel');
 const storeGrid = document.getElementById('storeGrid');
@@ -184,6 +189,8 @@ const pageContainer = document.querySelector('.page');
 const accountInfo = document.getElementById('accountInfo');
 const logoutBtn = document.getElementById('logoutBtn');
 const languageGrid = document.getElementById('languageGrid');
+const staffOrdersList = document.getElementById('staffOrdersList');
+const itOrdersList = document.getElementById('itOrdersList');
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(value);
@@ -234,6 +241,40 @@ function getCurrentUserOrders() {
 
 function getCurrentUserTickets() {
   return state.currentUser?.supportTickets || [];
+}
+
+function loadWorkflowOrders() {
+  const raw = localStorage.getItem('codeStoreWorkflowOrders');
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveWorkflowOrders() {
+  localStorage.setItem('codeStoreWorkflowOrders', JSON.stringify(state.workflowOrders));
+}
+
+function buildWorkflowOrder(orderData, source) {
+  const workflowOrder = {
+    ...orderData,
+    source,
+    stage: 'staff-review',
+    updateHistory: [
+      {
+        stage: 'staff-review',
+        note: `Order received from ${source}.`,
+        date: new Date().toISOString().split('T')[0]
+      }
+    ],
+    buyerEmail: state.currentUser?.email || orderData.buyerEmail || '',
+    buyerName: state.currentUser?.name || orderData.buyerName || 'Buyer'
+  };
+  state.workflowOrders.unshift(workflowOrder);
+  saveWorkflowOrders();
+  return workflowOrder;
 }
 
 function saveAccount(user) {
@@ -289,6 +330,8 @@ function setTab(tabId) {
   commissionPanel.hidden = tabId !== 'commission';
   ordersPanel.hidden = tabId !== 'orders';
   languagesPanel.hidden = tabId !== 'languages';
+  staffPanel.hidden = tabId !== 'staff';
+  itPanel.hidden = tabId !== 'it';
   accountPanel.hidden = tabId !== 'account';
   supportPanel.hidden = tabId !== 'support';
 }
@@ -713,6 +756,96 @@ function renderOrders() {
   });
 }
 
+function renderStaffWorkflow() {
+  const staffQueue = state.workflowOrders.filter(order => order.stage === 'staff-review' || order.stage === 'ready-for-delivery');
+  if (staffQueue.length === 0) {
+    staffOrdersList.innerHTML = '<div class="orders-empty">No orders are waiting for staff action.</div>';
+    return;
+  }
+
+  staffOrdersList.innerHTML = staffQueue
+    .map(order => `
+      <div class="workflow-card">
+        <div class="workflow-head">
+          <div>
+            <h3>${order.title}</h3>
+            <p>${order.buyerName} • ${order.buyerEmail || 'No email yet'}</p>
+          </div>
+          <span class="workflow-badge">${order.stage === 'ready-for-delivery' ? 'Ready to send' : 'Staff review'}</span>
+        </div>
+        <div class="workflow-meta">
+          <span>${order.id}</span>
+          <span>${order.type}</span>
+          <span>${formatCurrency(order.price)}</span>
+        </div>
+        <div class="workflow-actions">
+          ${order.stage === 'staff-review' ? '<button class="mini-action" data-staff-action="it">Pass to IT</button>' : ''}
+          ${order.stage === 'ready-for-delivery' ? '<button class="mini-action" data-staff-action="deliver">Send to buyer email</button>' : ''}
+        </div>
+      </div>
+    `)
+    .join('');
+
+  staffOrdersList.querySelectorAll('[data-staff-action]').forEach(button => {
+    button.addEventListener('click', () => {
+      const order = state.workflowOrders.find(item => item.id === button.closest('.workflow-card').querySelector('.workflow-meta span')?.textContent);
+      if (!order) return;
+      if (button.dataset.staffAction === 'it') {
+        order.stage = 'in-it';
+        order.updateHistory.push({ stage: 'in-it', note: 'Assigned to IT department.', date: new Date().toISOString().split('T')[0] });
+      } else if (button.dataset.staffAction === 'deliver') {
+        order.stage = 'delivered';
+        order.updateHistory.push({ stage: 'delivered', note: 'Finished order sent to buyer email.', date: new Date().toISOString().split('T')[0] });
+      }
+      saveWorkflowOrders();
+      renderStaffWorkflow();
+      renderItWorkflow();
+    });
+  });
+}
+
+function renderItWorkflow() {
+  const itQueue = state.workflowOrders.filter(order => order.stage === 'in-it' || order.stage === 'ready-for-delivery');
+  if (itQueue.length === 0) {
+    itOrdersList.innerHTML = '<div class="orders-empty">No orders are currently assigned to IT.</div>';
+    return;
+  }
+
+  itOrdersList.innerHTML = itQueue
+    .map(order => `
+      <div class="workflow-card">
+        <div class="workflow-head">
+          <div>
+            <h3>${order.title}</h3>
+            <p>${order.buyerName} • ${order.buyerEmail || 'No email yet'}</p>
+          </div>
+          <span class="workflow-badge">${order.stage === 'in-it' ? 'Working now' : 'Completed'}</span>
+        </div>
+        <div class="workflow-meta">
+          <span>${order.id}</span>
+          <span>${order.type}</span>
+          <span>${formatCurrency(order.price)}</span>
+        </div>
+        <div class="workflow-actions">
+          ${order.stage === 'in-it' ? '<button class="mini-action" data-it-action="done">Mark completed</button>' : ''}
+        </div>
+      </div>
+    `)
+    .join('');
+
+  itOrdersList.querySelectorAll('[data-it-action]').forEach(button => {
+    button.addEventListener('click', () => {
+      const order = state.workflowOrders.find(item => item.id === button.closest('.workflow-card').querySelector('.workflow-meta span')?.textContent);
+      if (!order) return;
+      order.stage = 'ready-for-delivery';
+      order.updateHistory.push({ stage: 'ready-for-delivery', note: 'IT completed the development work.', date: new Date().toISOString().split('T')[0] });
+      saveWorkflowOrders();
+      renderItWorkflow();
+      renderStaffWorkflow();
+    });
+  });
+}
+
 function renderSupport() {
   const tickets = getCurrentUserTickets();
   if (tickets.length === 0) {
@@ -850,6 +983,7 @@ checkoutBtn.addEventListener('click', () => {
       notes: `${method} • ${notes || 'No additional notes'}`
     };
     state.currentUser.orders.unshift(newOrder);
+    buildWorkflowOrder(newOrder, 'checkout');
     state.currentUser.cart = [];
     saveAccount(state.currentUser);
     renderCart();
@@ -896,6 +1030,7 @@ commissionForm.addEventListener('submit', event => {
     progress: 12
   };
   state.currentUser.orders.unshift(newOrder);
+  buildWorkflowOrder(newOrder, 'commission');
   saveAccount(state.currentUser);
 
   state.description = '';
@@ -1068,8 +1203,11 @@ window.addEventListener('DOMContentLoaded', () => {
   renderCommissionOptions();
   renderEstimatedPrice();
   renderCart();
+  state.workflowOrders = loadWorkflowOrders();
   renderOrders();
   renderSupport();
+  renderStaffWorkflow();
+  renderItWorkflow();
   renderAccount();
   setAuthView('login');
   setTab('store');
