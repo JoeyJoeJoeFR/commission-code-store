@@ -1,0 +1,2109 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Code Store & Commission Hub</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #07111f;
+        --surface: rgba(7, 17, 31, 0.95);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --accent: #4f46e5;
+        --accent-soft: rgba(79, 70, 229, 0.16);
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --border: rgba(148, 163, 184, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.22), transparent 26%),
+          radial-gradient(circle at 100% 10%, rgba(6, 182, 212, 0.16), transparent 24%),
+          var(--bg);
+        color: var(--text);
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      .page {
+        width: min(1280px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: 1.5rem 0 3rem;
+      }
+
+      .topbar,
+      .tabs,
+      .panel,
+      .card,
+      .cart-card,
+      .mini-card {
+        background: rgba(10, 19, 34, 0.95);
+        border: 1px solid var(--border);
+        border-radius: 1.25rem;
+        box-shadow: 0 20px 60px rgba(2, 6, 23, 0.28);
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.2rem 1.4rem;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+      }
+
+      .brand-icon {
+        width: 2.65rem;
+        aspect-ratio: 1;
+        border-radius: 0.95rem;
+        background: linear-gradient(135deg, #4f46e5, #06b6d4);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        color: white;
+      }
+
+      .brand-title {
+        margin: 0;
+        font-size: clamp(1.15rem, 2vw, 1.55rem);
+      }
+
+      .brand-subtitle {
+        margin: 0.25rem 0 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .tabs {
+        display: inline-flex;
+        padding: 0.3rem;
+        border-radius: 999px;
+      }
+
+      .tab {
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        padding: 0.78rem 1rem;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 180ms ease;
+      }
+
+      .tab.active {
+        color: white;
+        background: rgba(79, 70, 229, 0.18);
+        box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.22);
+      }
+
+      .content {
+        display: grid;
+        gap: 1.25rem;
+        margin-top: 1.25rem;
+      }
+
+      .panel {
+        padding: 1.3rem;
+      }
+
+      .panel h2 {
+        margin: 0 0 0.4rem;
+        font-size: 1.22rem;
+      }
+
+      .panel p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .hero {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        max-width: fit-content;
+        padding: 0.45rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(34, 197, 94, 0.14);
+        color: #bbf7d0;
+        font-size: 0.84rem;
+        border: 1px solid rgba(34, 197, 94, 0.24);
+      }
+
+      .hero h2 {
+        margin: 0.65rem 0 0.5rem;
+        font-size: clamp(1.5rem, 3vw, 2.3rem);
+        line-height: 1.15;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .primary-btn,
+      .secondary-btn,
+      .card button,
+      .form button,
+      .promo-actions button,
+      .cart-summary button,
+      .mini-action {
+        border: none;
+        padding: 0.9rem 1.05rem;
+        border-radius: 0.95rem;
+        cursor: pointer;
+        transition: transform 180ms ease, background 180ms ease;
+      }
+
+      .primary-btn,
+      .card button,
+      .form button,
+      .promo-actions button,
+      .cart-summary button {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: white;
+      }
+
+      .secondary-btn,
+      .mini-action {
+        background: rgba(148, 163, 184, 0.14);
+        color: var(--text);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+      }
+
+      .primary-btn:hover,
+      .secondary-btn:hover,
+      .card button:hover,
+      .form button:hover,
+      .promo-actions button:hover,
+      .cart-summary button:hover,
+      .mini-action:hover {
+        transform: translateY(-1px);
+      }
+
+      .stats {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        margin-top: 1.2rem;
+      }
+
+      .stats > div {
+        padding: 0.9rem 1rem;
+        border-radius: 1rem;
+        background: rgba(148, 163, 184, 0.08);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+      }
+
+      .stats strong {
+        display: block;
+        font-size: 1rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .stats span {
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .hero-summary {
+        display: flex;
+      }
+
+      .summary-card {
+        width: 100%;
+        padding: 1rem 1.1rem;
+        border-radius: 1.15rem;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.16), rgba(6, 182, 212, 0.12));
+        border: 1px solid rgba(99, 102, 241, 0.18);
+      }
+
+      .summary-card h3 {
+        margin: 0;
+        font-size: 1.08rem;
+      }
+
+      .summary-card p {
+        margin: 0.45rem 0 0;
+        color: #dbeafe;
+      }
+
+      .summary-grid {
+        display: grid;
+        gap: 0.7rem;
+        margin-top: 1rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .summary-grid > div {
+        padding: 0.8rem;
+        border-radius: 0.95rem;
+        background: rgba(8, 15, 28, 0.72);
+      }
+
+      .summary-grid span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.8rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .promo-banner {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .promo-banner strong {
+        display: block;
+        margin-bottom: 0.3rem;
+      }
+
+      .promo-actions {
+        display: flex;
+        gap: 0.7rem;
+        flex-wrap: wrap;
+      }
+
+      .promo-actions input {
+        min-width: 200px;
+        border: 1px solid var(--border);
+        border-radius: 0.95rem;
+        padding: 0.8rem 1rem;
+        background: rgba(15, 23, 42, 0.95);
+        color: var(--text);
+      }
+
+      .section-head {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.46rem 0.72rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        background: rgba(79, 70, 229, 0.15);
+        color: #c7d2fe;
+      }
+
+      .pill.success {
+        background: rgba(34, 197, 94, 0.15);
+        color: #bbf7d0;
+      }
+
+      .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .filter-row input,
+      .filter-row select {
+        border: 1px solid var(--border);
+        background: rgba(15, 23, 42, 0.95);
+        color: var(--text);
+        border-radius: 0.95rem;
+        padding: 0.85rem 1rem;
+        min-width: 180px;
+        flex: 1;
+      }
+
+      .store-shell {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .products-panel {
+        min-width: 0;
+      }
+
+      .grid-3 {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .card {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+      }
+
+      .card h3 {
+        margin: 0;
+        font-size: 1.04rem;
+      }
+
+      .card .meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.7rem;
+        align-items: center;
+        margin-bottom: 0.35rem;
+      }
+
+      .price-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+      }
+
+      .price-row strong {
+        font-size: 1.05rem;
+      }
+
+      .old-price {
+        color: var(--muted);
+        text-decoration: line-through;
+        font-size: 0.86rem;
+      }
+
+      .features-list {
+        display: grid;
+        gap: 0.4rem;
+        margin: 0;
+        padding-left: 1rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+
+      .tags span {
+        padding: 0.34rem 0.6rem;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.12);
+        color: #dbeafe;
+        font-size: 0.76rem;
+      }
+
+      .card-actions {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        margin-top: auto;
+      }
+
+      .cart-card {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+      }
+
+      .cart-items {
+        display: grid;
+        gap: 0.65rem;
+      }
+
+      .cart-item {
+        padding: 0.8rem;
+        border-radius: 0.95rem;
+        background: rgba(15, 23, 42, 0.88);
+        border: 1px solid var(--border);
+      }
+
+      .cart-item strong {
+        display: block;
+        margin-bottom: 0.25rem;
+      }
+
+      .cart-item small {
+        color: var(--muted);
+      }
+
+      .cart-empty {
+        padding: 1.3rem;
+        border-radius: 0.95rem;
+        background: rgba(15, 23, 42, 0.88);
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .cart-summary {
+        display: grid;
+        gap: 0.55rem;
+        margin-top: auto;
+      }
+
+      .line {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.6rem;
+      }
+
+      .option-grid {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .option-card {
+        text-align: left;
+        border-radius: 1rem;
+        padding: 0.95rem 1rem;
+        border: 1px solid var(--border);
+        background: rgba(15, 23, 42, 0.95);
+        cursor: pointer;
+        transition: border-color 180ms ease, background 180ms ease;
+      }
+
+      .option-card.selected {
+        border-color: rgba(99, 102, 241, 0.4);
+        background: rgba(79, 70, 229, 0.12);
+      }
+
+      .option-card small {
+        display: block;
+        margin-top: 0.35rem;
+        color: var(--muted);
+      }
+
+      .form-group {
+        display: grid;
+        gap: 0.65rem;
+        margin-bottom: 0.8rem;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 0.95rem;
+        padding: 0.85rem 1rem;
+        background: rgba(15, 23, 42, 0.95);
+        color: var(--text);
+      }
+
+      .form-group textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+
+      .field-row {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+
+      .language-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+
+      .language-card {
+        padding: 1rem;
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        background: rgba(15, 23, 42, 0.95);
+      }
+
+      .language-card .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.7rem;
+        border-radius: 999px;
+        background: rgba(79, 70, 229, 0.15);
+        color: #c7d2fe;
+        font-size: 0.8rem;
+        margin-bottom: 0.7rem;
+      }
+
+      .language-card h3 {
+        margin: 0 0 0.45rem;
+      }
+
+      .language-card p {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .account-grid {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .auth-card {
+        padding: 1rem;
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        background: rgba(15, 23, 42, 0.95);
+      }
+
+      .auth-toggle {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin: 0.7rem 0 1rem;
+      }
+
+      .auth-toggle button.active {
+        background: rgba(79, 70, 229, 0.16);
+        border-color: rgba(79, 70, 229, 0.3);
+      }
+
+      .notice {
+        padding: 0.8rem 0.95rem;
+        border-radius: 0.95rem;
+        background: rgba(79, 70, 229, 0.12);
+        color: #dbeafe;
+        margin-top: 0.7rem;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.82);
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+        z-index: 50;
+      }
+
+      .modal-backdrop.hidden {
+        display: none;
+      }
+
+      .modal {
+        width: min(760px, 100%);
+        max-height: 90vh;
+        overflow: auto;
+        background: rgba(10, 19, 34, 0.98);
+        border: 1px solid var(--border);
+        border-radius: 1.25rem;
+        padding: 1.2rem;
+        box-shadow: 0 24px 80px rgba(2, 6, 23, 0.35);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 0.9rem;
+      }
+
+      .support-grid {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .support-form,
+      .support-list {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .support-card {
+        padding: 1rem;
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        background: rgba(15, 23, 42, 0.95);
+      }
+
+      .support-card .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 0.75rem;
+      }
+
+      .support-card .meta-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: center;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .stack-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+      }
+
+      .stack-buttons button {
+        border: 1px solid var(--border);
+        padding: 0.7rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.08);
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .stack-buttons button.selected {
+        background: rgba(79, 70, 229, 0.16);
+        border-color: rgba(79, 70, 229, 0.3);
+      }
+
+      .summary-card .small-note {
+        display: block;
+        margin-top: 0.35rem;
+        color: #dbeafe;
+        font-size: 0.84rem;
+      }
+
+      .mini-grid {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .mini-card {
+        padding: 1rem;
+      }
+
+      .mini-card h3 {
+        margin: 0 0 0.5rem;
+      }
+
+      .mini-card ul {
+        margin: 0.5rem 0 0;
+        padding-left: 1rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .faq-list {
+        display: grid;
+        gap: 0.7rem;
+        margin-top: 1rem;
+      }
+
+      .faq-item {
+        padding: 0.9rem 1rem;
+        border-radius: 1rem;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid var(--border);
+      }
+
+      .faq-item strong {
+        display: block;
+        margin-bottom: 0.25rem;
+      }
+
+      .orders-empty {
+        padding: 2rem 1rem;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      .order-card {
+        padding: 1rem;
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        background: rgba(15, 23, 42, 0.95);
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .order-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .order-meta {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .order-key,
+      .order-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.5rem 0.7rem;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.1);
+        color: #dbeafe;
+        font-size: 0.8rem;
+      }
+
+      .progress-bar {
+        height: 0.72rem;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.14);
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4f46e5, #06b6d4);
+      }
+
+      @media (min-width: 860px) {
+        .hero {
+          grid-template-columns: 1.4fr 1fr;
+          align-items: center;
+        }
+
+        .store-shell {
+          grid-template-columns: 1.6fr 0.9fr;
+          align-items: start;
+        }
+
+        .mini-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <section class="topbar">
+        <div class="brand">
+          <div class="brand-icon">C</div>
+          <div>
+            <h1 class="brand-title">Code Store & Commission Hub</h1>
+            <p class="brand-subtitle">Student-friendly code products, commissions, and project tracking in PHP.</p>
+          </div>
+        </div>
+        <div class="tabs" id="tabButtons"></div>
+      </section>
+
+      <section class="content">
+        <article class="panel hero">
+          <div>
+            <span class="hero-badge">⚡ Fast delivery • Student-friendly pricing • PHP support</span>
+            <h2>Build your next project without overpaying.</h2>
+            <p>Browse ready-to-use code, add items to your cart, request a custom project, and manage support without leaving the store.</p>
+            <div class="hero-actions">
+              <button class="primary-btn" data-scroll="store">Shop Now</button>
+              <button class="secondary-btn" data-scroll="commission">Request a Quote</button>
+              <button class="secondary-btn" data-scroll="languages">Explore Languages</button>
+              <button class="secondary-btn" data-scroll="account">Open Account</button>
+            </div>
+            <div class="stats">
+              <div><strong>4.9/5</strong><span>Student reviews</span></div>
+              <div><strong>24h</strong><span>Fast support</span></div>
+              <div><strong>₱0</strong><span>Setup fee</span></div>
+              <div><strong>100%</strong><span>Customizable</span></div>
+            </div>
+          </div>
+          <div class="hero-summary">
+            <div class="summary-card">
+              <div>
+                <h3 id="activeTabTitle">Store</h3>
+                <p id="activeTabSubtitle">Browse prebuilt scripts and integrations.</p>
+              </div>
+              <div class="summary-grid">
+                <div><span>Items</span><strong id="catalogCount">0</strong></div>
+                <div><span>Orders</span><strong id="orderCount">0</strong></div>
+                <div><span>Promo</span><strong>STU20</strong></div>
+                <div><span>Currency</span><strong>PHP</strong></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="promo-banner">
+            <div>
+              <strong>Student Special</strong>
+              <p>Use promo code <strong>STU20</strong> for 20% off or <strong>Ctrl+Alt+STU50</strong> for 50% off for first-time buyers.</p>
+            </div>
+            <div class="promo-actions">
+              <input id="promoInput" type="text" placeholder="Enter promo code" />
+              <button class="secondary-btn" id="applyPromoBtn">Apply</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel" id="storePanel">
+          <div class="section-head">
+            <div>
+              <h2>Code Marketplace</h2>
+              <p>Search, compare, and add student-friendly products to your cart instantly.</p>
+            </div>
+            <span class="pill success" id="promoStatus">No promo applied</span>
+          </div>
+          <div class="filter-row">
+            <input id="searchInput" type="text" placeholder="Search scripts, categories, or tech..." />
+            <select id="categoryFilter">
+              <option value="all">All categories</option>
+            </select>
+            <select id="sortFilter">
+              <option value="featured">Featured</option>
+              <option value="cheap">Price: low to high</option>
+              <option value="expensive">Price: high to low</option>
+            </select>
+          </div>
+          <div class="store-shell">
+            <div class="products-panel">
+              <div class="grid-3" id="storeGrid"></div>
+            </div>
+            <aside class="cart-card">
+              <div class="section-head" style="margin-bottom: 0.3rem;">
+                <div>
+                  <h3 style="margin: 0;">Your Cart</h3>
+                  <p style="font-size: 0.9rem;">Quick checkout for your selected downloads.</p>
+                </div>
+                <span class="pill" id="cartCount">0 items</span>
+              </div>
+              <div class="cart-items" id="cartItems"></div>
+              <div class="cart-summary">
+                <div class="line"><span>Subtotal</span><strong id="subtotalValue">₱0</strong></div>
+                <div class="line"><span>Discount</span><strong id="discountValue">₱0</strong></div>
+                <div class="line"><span>Total</span><strong id="totalValue">₱0</strong></div>
+                <button id="checkoutBtn">Checkout with student pricing</button>
+              </div>
+            </aside>
+          </div>
+        </article>
+
+        <article class="panel" id="commissionPanel" hidden>
+          <div>
+            <h2>Order Custom Code</h2>
+            <p>Create a tailored project brief and receive a transparent quote in Philippine Peso.</p>
+          </div>
+          <form class="form" id="commissionForm">
+            <div class="form-group">
+              <label>Project Scope</label>
+              <div class="option-grid" id="scopeOptions"></div>
+            </div>
+            <div class="form-group">
+              <label>Preferred Tech Stack</label>
+              <div class="stack-buttons" id="stackButtons"></div>
+            </div>
+            <div class="form-group">
+              <label>Delivery Speed</label>
+              <div class="option-grid" id="deliveryOptions"></div>
+            </div>
+            <div class="form-group">
+              <label>Project Description</label>
+              <textarea id="projectDescription" placeholder="Describe your feature requirements, APIs, and goals..."></textarea>
+            </div>
+            <div class="summary-card">
+              <div>
+                <h3>Estimated Investment</h3>
+                <p id="estimatedPrice">₱0</p>
+                <span class="small-note">Includes student-friendly discounts and real-world delivery estimates.</span>
+              </div>
+              <button type="submit">Submit Commission Request</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="panel" id="ordersPanel" hidden>
+          <div class="section-head">
+            <div>
+              <h2>Your Orders</h2>
+              <p>Track your purchases and active commissions in one place.</p>
+            </div>
+            <span class="pill">Secure downloads • Progress updates</span>
+          </div>
+          <div id="ordersList"></div>
+        </article>
+
+        <article class="panel" id="languagesPanel" hidden>
+          <div class="section-head">
+            <div>
+              <h2>Programming Languages</h2>
+              <p>Browse starter resources for PHP, Java, JavaScript, C, C++, and C# right here on the same page.</p>
+            </div>
+            <span class="pill">One-stop learning library</span>
+          </div>
+          <div class="language-grid" id="languageGrid">
+            <div class="language-card">
+              <div class="tag">PHP</div>
+              <h3>PHP Projects</h3>
+              <p>Starter templates for CMS modules, admin panels, APIs, and form processing.</p>
+            </div>
+            <div class="language-card">
+              <div class="tag">Java</div>
+              <h3>Java Applications</h3>
+              <p>Console apps, desktop utilities, and backend service foundations.</p>
+            </div>
+            <div class="language-card">
+              <div class="tag">JavaScript</div>
+              <h3>JS Frontend Kits</h3>
+              <p>Interactive UI components, dashboards, and browser-based automation scripts.</p>
+            </div>
+            <div class="language-card">
+              <div class="tag">C</div>
+              <h3>C Systems Starter</h3>
+              <p>Low-level utilities, data structures, and algorithm practice templates.</p>
+            </div>
+            <div class="language-card">
+              <div class="tag">C++</div>
+              <h3>C++ Toolkit</h3>
+              <p>Competitive programming templates, game logic, and performance-focused builds.</p>
+            </div>
+            <div class="language-card">
+              <div class="tag">C#</div>
+              <h3>C# Solutions</h3>
+              <p>Windows desktop apps, Unity-friendly code, and .NET service blueprints.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel" id="accountPanel" hidden>
+          <div class="section-head">
+            <div>
+              <h2>My Account</h2>
+              <p>Create an account, sign in, and keep your purchases and support requests in one place.</p>
+            </div>
+            <span class="pill">Secure local account</span>
+          </div>
+          <div class="account-grid">
+            <div class="auth-card">
+              <div class="auth-toggle">
+                <button class="mini-action active" type="button" data-auth-view="login">Login</button>
+                <button class="mini-action" type="button" data-auth-view="register">Register</button>
+              </div>
+              <form id="loginForm" class="form-group">
+                <div class="field-row">
+                  <div>
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required />
+                  </div>
+                  <div>
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required />
+                  </div>
+                </div>
+                <button type="submit">Log in</button>
+              </form>
+              <form id="registerForm" class="form-group" hidden>
+                <div class="field-row">
+                  <div>
+                    <label>Full name</label>
+                    <input type="text" id="registerName" required />
+                  </div>
+                  <div>
+                    <label>Email</label>
+                    <input type="email" id="registerEmail" required />
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div>
+                    <label>Password</label>
+                    <input type="password" id="registerPassword" required />
+                  </div>
+                </div>
+                <button type="submit">Create account</button>
+              </form>
+            </div>
+            <div class="auth-card">
+              <h3 style="margin-top: 0;">Account status</h3>
+              <p id="accountStatus">You are not signed in yet.</p>
+              <div id="accountInfo" class="notice"></div>
+              <button id="logoutBtn" class="secondary-btn" style="margin-top: 0.8rem;" hidden>Log out</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel" id="supportPanel" hidden>
+          <div class="section-head">
+            <div>
+              <h2>Support Center</h2>
+              <p>Request a refund, cancel an order, or ask for help with a purchase.</p>
+            </div>
+            <span class="pill">Live support queue</span>
+          </div>
+          <div class="support-grid">
+            <form class="support-form" id="supportForm">
+              <div class="form-group">
+                <label>Issue Type</label>
+                <select id="supportType">
+                  <option value="refund">Refund request</option>
+                  <option value="cancel">Order cancellation</option>
+                  <option value="help">General support</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Related Order</label>
+                <select id="supportOrderSelect"></select>
+              </div>
+              <div class="form-group">
+                <label>Message</label>
+                <textarea id="supportMessage" placeholder="Tell us what happened and how we can help..."></textarea>
+              </div>
+              <button type="submit">Submit support request</button>
+            </form>
+            <div class="support-list" id="supportList"></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="section-head">
+            <div>
+              <h2>Why students love this store</h2>
+              <p>Everything is designed to be simple, affordable, and useful for real-world projects.</p>
+            </div>
+          </div>
+          <div class="mini-grid">
+            <div class="mini-card">
+              <h3>Affordable packages</h3>
+              <ul>
+                <li>Budget-conscious pricing for school and side projects</li>
+                <li>Bundle discounts and promo code support</li>
+                <li>Clear, modular downloads for quick setup</li>
+              </ul>
+            </div>
+            <div class="mini-card">
+              <h3>Helpful for learning</h3>
+              <ul>
+                <li>Readable code with comments and starter docs</li>
+                <li>Support for popular stacks like React, Node.js, and PHP</li>
+                <li>Custom commission guidance for capstone projects</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <div id="modalBackdrop" class="modal-backdrop hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modalTitle" style="margin: 0;">Details</h3>
+          <button id="closeModalBtn" class="secondary-btn">Close</button>
+        </div>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <script>
+      const tabs = [
+        { id: 'store', title: 'Store', subtitle: 'Browse prebuilt scripts and integrations.' },
+        { id: 'commission', title: 'Order Custom Code', subtitle: 'Submit a custom software request.' },
+        { id: 'orders', title: 'My Orders', subtitle: 'Review your active commissions and purchases.' },
+        { id: 'languages', title: 'Languages', subtitle: 'Explore coding language resources.' },
+        { id: 'account', title: 'Account', subtitle: 'Log in, register, and manage your profile.' },
+        { id: 'support', title: 'Support', subtitle: 'Manage refunds, cancellations, and help requests.' }
+      ];
+
+      const prebuiltItems = [
+        {
+          id: 'script-1',
+          title: 'Automated Web Scraper Engine',
+          category: 'Automation',
+          price: 1590,
+          oldPrice: 1990,
+          tech: ['Python', 'Playwright', 'BeautifulSoup'],
+          description: 'High-performance web scraping framework with proxy rotation and anti-bot bypass.',
+          downloads: 142,
+          features: ['Proxy rotation', 'CSV + JSON export', 'Starter docs']
+        },
+        {
+          id: 'script-2',
+          title: 'Auth & User Management Suite',
+          category: 'Full-Stack',
+          price: 2490,
+          oldPrice: 2990,
+          tech: ['React', 'Node.js', 'JWT', 'PostgreSQL'],
+          description: 'Complete JWT authentication with OAuth 2.0, multi-factor auth, and role-based access.',
+          downloads: 289,
+          features: ['JWT login flow', 'Role-based access', 'Admin dashboard']
+        },
+        {
+          id: 'script-3',
+          title: 'Discord Moderation & Economy Bot',
+          category: 'Bots',
+          price: 1890,
+          oldPrice: 2390,
+          tech: ['Node.js', 'Discord.js', 'MongoDB'],
+          description: 'Feature-rich Discord bot with auto-moderation, leveling, and virtual economy.',
+          downloads: 98,
+          features: ['Leveling system', 'Economy commands', 'Mod tools']
+        },
+        {
+          id: 'script-4',
+          title: 'E-Commerce Stripe Checkout API',
+          category: 'API & Microservices',
+          price: 3290,
+          oldPrice: 3890,
+          tech: ['TypeScript', 'Express', 'Stripe SDK'],
+          description: 'Payment backend with webhooks, subscriptions, and refund handlers.',
+          downloads: 310,
+          features: ['Webhook support', 'Refund handling', 'Subscription billing']
+        }
+      ];
+
+      const languagePacks = [
+        {
+          id: 'php',
+          title: 'PHP Starter Pack',
+          description: 'Reusable PHP templates for forms, APIs, and admin panels.',
+          filename: 'php-starter-pack.txt',
+          content: 'PHP Starter Pack\n- Form handler template\n- API route starter\n- Admin panel layout sample'
+        },
+        {
+          id: 'java',
+          title: 'Java Starter Pack',
+          description: 'Console and backend Java foundations for school and capstone projects.',
+          filename: 'java-starter-pack.txt',
+          content: 'Java Starter Pack\n- Main class template\n- CRUD service scaffold\n- File handling sample'
+        },
+        {
+          id: 'javascript',
+          title: 'JavaScript Starter Pack',
+          description: 'Frontend and Node.js modules with reusable UI patterns.',
+          filename: 'javascript-starter-pack.txt',
+          content: 'JavaScript Starter Pack\n- DOM utility functions\n- API request helper\n- UI state sample'
+        },
+        {
+          id: 'c',
+          title: 'C Starter Pack',
+          description: 'Simple C utilities for data structures and algorithm study.',
+          filename: 'c-starter-pack.txt',
+          content: 'C Starter Pack\n- Linked list sample\n- Stack implementation\n- File input output example'
+        },
+        {
+          id: 'cpp',
+          title: 'C++ Starter Pack',
+          description: 'Performance-oriented templates for games, algorithms, and competitions.',
+          filename: 'cpp-starter-pack.txt',
+          content: 'C++ Starter Pack\n- Sorting template\n- Class demo\n- Graph traversal sample'
+        },
+        {
+          id: 'csharp',
+          title: 'C# Starter Pack',
+          description: 'Helpful C# templates for .NET, desktop apps, and Unity-style coding.',
+          filename: 'csharp-starter-pack.txt',
+          content: 'C# Starter Pack\n- Console app template\n- Service class sample\n- JSON helper example'
+        }
+      ];
+
+      const commissionScope = [
+        { id: 'basic', title: 'Basic Script / Bug Fix', price: 4200 },
+        { id: 'medium', title: 'Full Feature Module', price: 9800 },
+        { id: 'complex', title: 'Full Platform / App', price: 24800 }
+      ];
+
+      const deliveryOptionsData = [
+        { id: 'standard', title: 'Standard (7 days)', multiplier: 1.0 },
+        { id: 'express', title: 'Express (3 days)', multiplier: 1.3 },
+        { id: 'rush', title: 'Rush (24 hours)', multiplier: 1.8 }
+      ];
+
+      const stackOptions = ['React', 'Node.js', 'Python', 'TypeScript', 'Go', 'PostgreSQL', 'Docker', 'TailwindCSS'];
+
+      let currentTab = 'store';
+
+      const state = {
+        search: '',
+        category: 'all',
+        sort: 'featured',
+        promo: '',
+        promoApplied: false,
+        selectedScope: 'medium',
+        selectedDelivery: 'standard',
+        selectedStack: ['React', 'Node.js'],
+        description: '',
+        cart: [],
+        supportTickets: [],
+        currentUser: null,
+        authView: 'login'
+      };
+
+      const tabButtons = document.getElementById('tabButtons');
+      const activeTabTitle = document.getElementById('activeTabTitle');
+      const activeTabSubtitle = document.getElementById('activeTabSubtitle');
+      const orderCount = document.getElementById('orderCount');
+      const catalogCount = document.getElementById('catalogCount');
+      const storePanel = document.getElementById('storePanel');
+      const commissionPanel = document.getElementById('commissionPanel');
+      const ordersPanel = document.getElementById('ordersPanel');
+      const languagesPanel = document.getElementById('languagesPanel');
+      const accountPanel = document.getElementById('accountPanel');
+      const supportPanel = document.getElementById('supportPanel');
+      const storeGrid = document.getElementById('storeGrid');
+      const searchInput = document.getElementById('searchInput');
+      const categoryFilter = document.getElementById('categoryFilter');
+      const sortFilter = document.getElementById('sortFilter');
+      const scopeOptions = document.getElementById('scopeOptions');
+      const deliveryOptions = document.getElementById('deliveryOptions');
+      const stackButtons = document.getElementById('stackButtons');
+      const estimatedPrice = document.getElementById('estimatedPrice');
+      const projectDescription = document.getElementById('projectDescription');
+      const commissionForm = document.getElementById('commissionForm');
+      const ordersList = document.getElementById('ordersList');
+      const supportForm = document.getElementById('supportForm');
+      const supportType = document.getElementById('supportType');
+      const supportOrderSelect = document.getElementById('supportOrderSelect');
+      const supportMessage = document.getElementById('supportMessage');
+      const supportList = document.getElementById('supportList');
+      const promoInput = document.getElementById('promoInput');
+      const applyPromoBtn = document.getElementById('applyPromoBtn');
+      const promoStatus = document.getElementById('promoStatus');
+      const cartItems = document.getElementById('cartItems');
+      const cartCount = document.getElementById('cartCount');
+      const subtotalValue = document.getElementById('subtotalValue');
+      const discountValue = document.getElementById('discountValue');
+      const totalValue = document.getElementById('totalValue');
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const loginEmail = document.getElementById('loginEmail');
+      const loginPassword = document.getElementById('loginPassword');
+      const registerName = document.getElementById('registerName');
+      const registerEmail = document.getElementById('registerEmail');
+      const registerPassword = document.getElementById('registerPassword');
+      const accountStatus = document.getElementById('accountStatus');
+      const accountInfo = document.getElementById('accountInfo');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const languageGrid = document.getElementById('languageGrid');
+
+      function formatCurrency(value) {
+        return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(value);
+      }
+
+      function generateKey(title) {
+        const code = title
+          .split(' ')
+          .map(word => word[0])
+          .join('')
+          .toUpperCase();
+        return `${code}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+      }
+
+      function getEstimatedPrice() {
+        const scope = commissionScope.find(item => item.id === state.selectedScope);
+        const delivery = deliveryOptionsData.find(item => item.id === state.selectedDelivery);
+        const stackFee = state.selectedStack.length * 650;
+        return Math.round((scope.price + stackFee) * delivery.multiplier);
+      }
+
+      function getDiscountPercent() {
+        const promo = state.promo.toUpperCase();
+        if (state.promoApplied && promo === 'STU20') return 0.2;
+        if (state.promoApplied && promo === 'CTRL+ALT+STU50') return 0.5;
+        return 0;
+      }
+
+      function getCartSubtotal() {
+        return state.cart.reduce((sum, item) => sum + item.price, 0);
+      }
+
+      function getCartDiscount() {
+        return Math.round(getCartSubtotal() * getDiscountPercent());
+      }
+
+      function getCartTotal() {
+        return getCartSubtotal() - getCartDiscount();
+      }
+
+      function getCurrentUserOrders() {
+        return state.currentUser?.orders || [];
+      }
+
+      function saveAccount(user) {
+        localStorage.setItem('codeStoreAccount', JSON.stringify(user));
+        const accounts = JSON.parse(localStorage.getItem('codeStoreAccounts') || '[]');
+        const existingIndex = accounts.findIndex(account => account.email === user.email);
+        if (existingIndex >= 0) {
+          accounts[existingIndex] = user;
+        } else {
+          accounts.push(user);
+        }
+        localStorage.setItem('codeStoreAccounts', JSON.stringify(accounts));
+      }
+
+      function loadAccount() {
+        const raw = localStorage.getItem('codeStoreAccount');
+        if (!raw) return null;
+        try {
+          const user = JSON.parse(raw);
+          return { ...user, orders: user.orders || [] };
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function requireAccount(actionLabel) {
+        if (!state.currentUser) {
+          alert(`Please create an account or log in before you can ${actionLabel}.`);
+          setTab('account');
+          return false;
+        }
+        return true;
+      }
+
+      function setTab(tabId) {
+        currentTab = tabId;
+        const tabData = tabs.find(tab => tab.id === tabId);
+        if (!tabData) return;
+        activeTabTitle.textContent = tabData.title;
+        activeTabSubtitle.textContent = tabData.subtitle;
+        orderCount.textContent = `${getCurrentUserOrders().length} orders`;
+
+        tabButtons.querySelectorAll('.tab').forEach(button => {
+          button.classList.toggle('active', button.dataset.tab === tabId);
+        });
+
+        storePanel.hidden = tabId !== 'store';
+        commissionPanel.hidden = tabId !== 'commission';
+        ordersPanel.hidden = tabId !== 'orders';
+        languagesPanel.hidden = tabId !== 'languages';
+        accountPanel.hidden = tabId !== 'account';
+        supportPanel.hidden = tabId !== 'support';
+      }
+
+      function renderTabs() {
+        tabButtons.innerHTML = tabs
+          .map(tab => `<button class="tab${tab.id === currentTab ? ' active' : ''}" data-tab="${tab.id}">${tab.title}</button>`)
+          .join('');
+
+        tabButtons.querySelectorAll('.tab').forEach(button => {
+          button.addEventListener('click', () => setTab(button.dataset.tab));
+        });
+      }
+
+      function renderCategoryFilter() {
+        const categories = ['all', ...new Set(prebuiltItems.map(item => item.category))];
+        categoryFilter.innerHTML = categories
+          .map(category => `<option value="${category}" ${state.category === category ? 'selected' : ''}>${category === 'all' ? 'All categories' : category}</option>`)
+          .join('');
+      }
+
+      function getFilteredItems() {
+        const query = state.search.trim().toLowerCase();
+        return prebuiltItems
+          .filter(item => {
+            const matchesCategory = state.category === 'all' || item.category === state.category;
+            const matchesQuery =
+              item.title.toLowerCase().includes(query) ||
+              item.category.toLowerCase().includes(query) ||
+              item.tech.some(tech => tech.toLowerCase().includes(query));
+            return matchesCategory && matchesQuery;
+          })
+          .sort((a, b) => {
+            if (state.sort === 'cheap') return a.price - b.price;
+            if (state.sort === 'expensive') return b.price - a.price;
+            return 0;
+          });
+      }
+
+      function renderStore() {
+        const filtered = getFilteredItems();
+        catalogCount.textContent = filtered.length;
+
+        if (filtered.length === 0) {
+          storeGrid.innerHTML = '<div class="orders-empty">No matching products were found.</div>';
+          return;
+        }
+
+        storeGrid.innerHTML = filtered
+          .map(item => `
+            <div class="card">
+              <div>
+                <div class="meta">
+                  <span class="pill">${item.category}</span>
+                  <span class="pill success">${item.downloads} downloads</span>
+                </div>
+                <h3>${item.title}</h3>
+                <p style="color: var(--muted); margin: 0.3rem 0 0.8rem; line-height: 1.6;">${item.description}</p>
+                <div class="price-row">
+                  <div>
+                    <strong>${formatCurrency(item.price)}</strong>
+                    <div class="old-price">${item.oldPrice ? formatCurrency(item.oldPrice) : ''}</div>
+                  </div>
+                  <span class="pill">Student deal</span>
+                </div>
+                <div class="tags" style="margin-top: 0.8rem;">${item.tech.map(tech => `<span>${tech}</span>`).join('')}</div>
+                <ul class="features-list">
+                  ${item.features.map(feature => `<li>${feature}</li>`).join('')}
+                </ul>
+              </div>
+              <div class="card-actions">
+                <button data-action="buy" data-id="${item.id}">Add to cart</button>
+                <button class="secondary-btn" data-action="preview" data-id="${item.id}">Preview</button>
+              </div>
+            </div>
+          `)
+          .join('');
+
+        storeGrid.querySelectorAll('button[data-action="buy"]').forEach(button => {
+          button.addEventListener('click', () => {
+            const item = prebuiltItems.find(product => product.id === button.dataset.id);
+            if (!item) return;
+            const existing = state.cart.find(entry => entry.id === item.id);
+            if (existing) {
+              existing.quantity += 1;
+            } else {
+              state.cart.push({ ...item, quantity: 1 });
+            }
+            renderCart();
+            setTab('store');
+          });
+        });
+
+        storeGrid.querySelectorAll('button[data-action="preview"]').forEach(button => {
+          button.addEventListener('click', () => {
+            const item = prebuiltItems.find(product => product.id === button.dataset.id);
+            if (!item) return;
+            openModal(item.title, `
+              <div class="notice">${item.description}</div>
+              <p><strong>Category:</strong> ${item.category}</p>
+              <p><strong>Tech stack:</strong> ${item.tech.join(', ')}</p>
+              <ul class="features-list">
+                ${item.features.map(feature => `<li>${feature}</li>`).join('')}
+              </ul>
+              <div class="card-actions" style="margin-top: 1rem;">
+                <button class="primary-btn" data-add-product="${item.id}">Add to cart</button>
+                <button class="secondary-btn" data-close-modal="true">Close</button>
+              </div>
+            `);
+          });
+        });
+      }
+
+      function renderLanguages() {
+        languageGrid.innerHTML = languagePacks
+          .map(pack => `
+            <div class="language-card">
+              <div class="tag">${pack.title.split(' ')[0]}</div>
+              <h3>${pack.title}</h3>
+              <p>${pack.description}</p>
+              <div class="card-actions" style="margin-top: 1rem;">
+                <button class="primary-btn" data-download-pack="${pack.id}">Download pack</button>
+              </div>
+            </div>
+          `)
+          .join('');
+
+        languageGrid.querySelectorAll('[data-download-pack]').forEach(button => {
+          button.addEventListener('click', () => {
+            const pack = languagePacks.find(item => item.id === button.dataset.downloadPack);
+            if (!pack) return;
+            const blob = new Blob([pack.content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = pack.filename;
+            link.click();
+            URL.revokeObjectURL(url);
+          });
+        });
+      }
+
+      function renderCart() {
+        cartCount.textContent = `${state.cart.reduce((sum, item) => sum + item.quantity, 0)} items`;
+        if (state.cart.length === 0) {
+          cartItems.innerHTML = '<div class="cart-empty">Your cart is empty. Add a product to get started.</div>';
+          subtotalValue.textContent = formatCurrency(0);
+          discountValue.textContent = formatCurrency(0);
+          totalValue.textContent = formatCurrency(0);
+          return;
+        }
+
+        cartItems.innerHTML = state.cart
+          .map(item => `
+            <div class="cart-item">
+              <strong>${item.title}</strong>
+              <small>${item.quantity} × ${formatCurrency(item.price)}</small>
+            </div>
+          `)
+          .join('');
+
+        subtotalValue.textContent = formatCurrency(getCartSubtotal());
+        discountValue.textContent = formatCurrency(getCartDiscount());
+        totalValue.textContent = formatCurrency(getCartTotal());
+      }
+
+      function renderCommissionOptions() {
+        scopeOptions.innerHTML = commissionScope
+          .map(option => `
+            <button type="button" class="option-card${state.selectedScope === option.id ? ' selected' : ''}" data-scope="${option.id}">
+              <strong>${option.title}</strong>
+              <small>Base ${formatCurrency(option.price)}</small>
+            </button>
+          `)
+          .join('');
+
+        deliveryOptions.innerHTML = deliveryOptionsData
+          .map(option => `
+            <button type="button" class="option-card${state.selectedDelivery === option.id ? ' selected' : ''}" data-delivery="${option.id}">
+              <strong>${option.title}</strong>
+              <small>${option.multiplier}x rate</small>
+            </button>
+          `)
+          .join('');
+
+        stackButtons.innerHTML = stackOptions
+          .map(stack => `
+            <button type="button" class="${state.selectedStack.includes(stack) ? 'selected' : ''}" data-stack="${stack}">${stack}</button>
+          `)
+          .join('');
+
+        document.querySelectorAll('#scopeOptions button').forEach(button => {
+          button.addEventListener('click', () => {
+            state.selectedScope = button.dataset.scope;
+            renderCommissionOptions();
+            renderEstimatedPrice();
+          });
+        });
+
+        document.querySelectorAll('#deliveryOptions button').forEach(button => {
+          button.addEventListener('click', () => {
+            state.selectedDelivery = button.dataset.delivery;
+            renderCommissionOptions();
+            renderEstimatedPrice();
+          });
+        });
+
+        document.querySelectorAll('#stackButtons button').forEach(button => {
+          button.addEventListener('click', () => {
+            const tech = button.dataset.stack;
+            const index = state.selectedStack.indexOf(tech);
+            if (index >= 0) {
+              state.selectedStack.splice(index, 1);
+            } else {
+              state.selectedStack.push(tech);
+            }
+            renderCommissionOptions();
+            renderEstimatedPrice();
+          });
+        });
+      }
+
+      function renderEstimatedPrice() {
+        estimatedPrice.textContent = formatCurrency(getEstimatedPrice());
+      }
+
+      function renderSupportOrderOptions() {
+        const currentOrders = getCurrentUserOrders();
+        supportOrderSelect.innerHTML = currentOrders.length
+          ? currentOrders.map(order => `<option value="${order.id}">${order.id} — ${order.title}</option>`).join('')
+          : '<option value="">No orders yet</option>';
+      }
+
+      function openModal(title, body) {
+        modalTitle.textContent = title;
+        modalBody.innerHTML = body;
+        modalBackdrop.classList.remove('hidden');
+
+        modalBody.querySelectorAll('[data-add-product]').forEach(button => {
+          button.addEventListener('click', () => {
+            const item = prebuiltItems.find(product => product.id === button.dataset.addProduct);
+            if (!item) return;
+            const existing = state.cart.find(entry => entry.id === item.id);
+            if (existing) {
+              existing.quantity += 1;
+            } else {
+              state.cart.push({ ...item, quantity: 1 });
+            }
+            renderCart();
+            closeModal();
+          });
+        });
+
+        modalBody.querySelectorAll('[data-close-modal]').forEach(button => {
+          button.addEventListener('click', closeModal);
+        });
+      }
+
+      function closeModal() {
+        modalBackdrop.classList.add('hidden');
+      }
+
+      function renderAccount() {
+        const user = state.currentUser;
+        if (!user) {
+          accountStatus.textContent = 'You are not signed in yet.';
+          accountInfo.innerHTML = 'Create an account or log in to save your orders and support tickets.';
+          logoutBtn.hidden = true;
+          return;
+        }
+
+        accountStatus.textContent = `Signed in as ${user.name}`;
+        accountInfo.innerHTML = `
+          <strong>Email:</strong> ${user.email}<br />
+          <strong>Member since:</strong> ${user.joined}<br />
+          <strong>Orders:</strong> ${getCurrentUserOrders().length}
+        `;
+        logoutBtn.hidden = false;
+      }
+
+      function setAuthView(view) {
+        state.authView = view;
+        document.querySelectorAll('.auth-toggle button').forEach(button => {
+          button.classList.toggle('active', button.dataset.authView === view);
+        });
+        loginForm.hidden = view !== 'login';
+        registerForm.hidden = view !== 'register';
+      }
+
+      function renderOrders() {
+        const currentOrders = getCurrentUserOrders();
+        orderCount.textContent = `${currentOrders.length} orders`;
+        renderSupportOrderOptions();
+
+        if (!state.currentUser) {
+          ordersList.innerHTML = '<div class="orders-empty">Log in to see your order history.</div>';
+          return;
+        }
+
+        if (currentOrders.length === 0) {
+          ordersList.innerHTML = '<div class="orders-empty">You have no orders yet. Purchase a product or submit a commission to get started.</div>';
+          return;
+        }
+
+        ordersList.innerHTML = currentOrders
+          .map(order => `
+            <div class="order-card">
+              <div class="order-header">
+                <div>
+                  <h3 style="margin: 0;">${order.title}</h3>
+                  <div class="order-meta">
+                    <span class="order-key">${order.id}</span>
+                    <span class="pill">${order.type}</span>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <strong>${formatCurrency(order.price)}</strong>
+                  <div style="color: var(--muted);">${order.date}</div>
+                </div>
+              </div>
+              <div class="order-meta" style="margin-top: 0.35rem;">
+                <span class="order-status">${order.status}</span>
+              </div>
+              ${order.key ? `
+                <div class="order-meta" style="margin-top: 0.3rem;">
+                  <span class="order-key">License: ${order.key}</span>
+                </div>
+              ` : ''}
+              ${order.progress !== undefined ? `
+                <div style="margin-top: 0.5rem;">
+                  <div class="order-meta">
+                    <span style="color: #c7d2fe; font-size: 0.88rem;">Progress ${order.progress}%</span>
+                  </div>
+                  <div class="progress-bar" style="margin-top: 0.6rem;">
+                    <div class="progress-fill" style="width: ${order.progress}%;"></div>
+                  </div>
+                </div>
+              ` : ''}
+              <div class="actions" style="margin-top: 0.75rem;">
+                <button class="mini-action" data-action="cancel" data-id="${order.id}">Cancel order</button>
+                <button class="mini-action" data-action="refund" data-id="${order.id}">Request refund</button>
+              </div>
+            </div>
+          `)
+          .join('');
+
+        ordersList.querySelectorAll('button[data-action]').forEach(button => {
+          button.addEventListener('click', () => {
+            const currentOrders = getCurrentUserOrders();
+            const order = currentOrders.find(item => item.id === button.dataset.id);
+            if (!order) return;
+            if (button.dataset.action === 'cancel') {
+              if (order.status === 'Cancelled') {
+                alert('This order is already cancelled.');
+                return;
+              }
+              order.status = 'Cancellation Requested';
+              state.supportTickets.unshift({
+                id: `SUP-${Math.floor(1000 + Math.random() * 9000)}`,
+                orderId: order.id,
+                type: 'cancel',
+                message: `Cancellation requested for ${order.title}.`,
+                status: 'Open',
+                date: new Date().toISOString().split('T')[0]
+              });
+            } else if (button.dataset.action === 'refund') {
+              if (order.status === 'Refund Pending' || order.status === 'Refunded') {
+                alert('A refund request is already in progress for this order.');
+                return;
+              }
+              order.status = 'Refund Pending';
+              state.supportTickets.unshift({
+                id: `SUP-${Math.floor(1000 + Math.random() * 9000)}`,
+                orderId: order.id,
+                type: 'refund',
+                message: `Refund requested for ${order.title}.`,
+                status: 'Open',
+                date: new Date().toISOString().split('T')[0]
+              });
+            }
+            if (state.currentUser) {
+              state.currentUser.orders = currentOrders;
+              saveAccount(state.currentUser);
+            }
+            renderOrders();
+            renderSupport();
+            setTab('support');
+          });
+        });
+      }
+
+      function renderSupport() {
+        if (state.supportTickets.length === 0) {
+          supportList.innerHTML = '<div class="orders-empty">No support requests yet.</div>';
+          return;
+        }
+
+        supportList.innerHTML = state.supportTickets
+          .map(ticket => `
+            <div class="support-card">
+              <div class="meta-line">
+                <span class="pill">${ticket.type === 'refund' ? 'Refund' : ticket.type === 'cancel' ? 'Cancellation' : 'Help'}</span>
+                <span>${ticket.id}</span>
+                <span>${ticket.date}</span>
+              </div>
+              <h3 style="margin: 0.45rem 0;">${ticket.message}</h3>
+              <div class="meta-line">
+                <span class="order-key">Order: ${ticket.orderId}</span>
+                <span class="pill">${ticket.status}</span>
+              </div>
+              <div class="actions">
+                <button class="mini-action" data-ticket-action="resolve" data-id="${ticket.id}">Mark resolved</button>
+              </div>
+            </div>
+          `)
+          .join('');
+
+        supportList.querySelectorAll('button[data-ticket-action="resolve"]').forEach(button => {
+          button.addEventListener('click', () => {
+            const ticket = state.supportTickets.find(item => item.id === button.dataset.id);
+            if (!ticket) return;
+            ticket.status = 'Resolved';
+            renderSupport();
+          });
+        });
+      }
+
+      searchInput.addEventListener('input', event => {
+        state.search = event.target.value;
+        renderStore();
+      });
+
+      categoryFilter.addEventListener('change', event => {
+        state.category = event.target.value;
+        renderStore();
+      });
+
+      sortFilter.addEventListener('change', event => {
+        state.sort = event.target.value;
+        renderStore();
+      });
+
+      applyPromoBtn.addEventListener('click', () => {
+        state.promo = promoInput.value.trim().toUpperCase();
+        state.promoApplied = state.promo === 'STU20' || state.promo === 'CTRL+ALT+STU50';
+        promoStatus.textContent = state.promoApplied ? 'Promo applied' : 'No promo applied';
+        promoStatus.className = `pill ${state.promoApplied ? 'success' : ''}`;
+        renderCart();
+      });
+
+      checkoutBtn.addEventListener('click', () => {
+        if (!requireAccount('place an order')) {
+          return;
+        }
+
+        if (state.cart.length === 0) {
+          alert('Add at least one product to your cart before checking out.');
+          return;
+        }
+
+        const total = getCartTotal();
+        const itemTitles = state.cart.map(item => item.title).join(', ');
+        openModal('Checkout', `
+          <form id="checkoutForm" class="form-group">
+            <div class="field-row">
+              <div>
+                <label>Full name</label>
+                <input type="text" id="checkoutName" value="${state.currentUser ? state.currentUser.name : ''}" required />
+              </div>
+              <div>
+                <label>Email</label>
+                <input type="email" id="checkoutEmail" value="${state.currentUser ? state.currentUser.email : ''}" required />
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <label>Address</label>
+                <input type="text" id="checkoutAddress" placeholder="123 Sample Street, Manila" required />
+              </div>
+              <div>
+                <label>Payment method</label>
+                <select id="checkoutMethod">
+                  <option value="GCash">GCash</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="COD">Cash on Delivery</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Notes</label>
+              <textarea id="checkoutNotes" placeholder="Add any order notes or delivery instructions..."></textarea>
+            </div>
+            <div class="notice">Order total: ${formatCurrency(total)} for ${itemTitles}</div>
+            <div class="card-actions" style="margin-top: 1rem;">
+              <button class="primary-btn" type="submit">Place order</button>
+              <button class="secondary-btn" type="button" data-close-modal="true">Cancel</button>
+            </div>
+          </form>
+        `);
+
+        const checkoutForm = document.getElementById('checkoutForm');
+        checkoutForm.addEventListener('submit', event => {
+          event.preventDefault();
+          const name = document.getElementById('checkoutName').value.trim();
+          const email = document.getElementById('checkoutEmail').value.trim();
+          const address = document.getElementById('checkoutAddress').value.trim();
+          const method = document.getElementById('checkoutMethod').value;
+          const notes = document.getElementById('checkoutNotes').value.trim();
+
+          if (!name || !email || !address) {
+            alert('Please complete the checkout form.');
+            return;
+          }
+
+          const newOrder = {
+            id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+            title: `Cart Checkout (${itemTitles})`,
+            type: 'Prebuilt',
+            price: total,
+            date: new Date().toISOString().split('T')[0],
+            status: 'Paid',
+            key: generateKey(itemTitles),
+            notes: `${method} • ${notes || 'No additional notes'}`
+          };
+          state.currentUser.orders.unshift(newOrder);
+          saveAccount(state.currentUser);
+          state.cart = [];
+          renderCart();
+          renderOrders();
+          closeModal();
+          setTab('orders');
+          alert('Checkout complete. Your order has been placed successfully.');
+        });
+      });
+
+      document.querySelectorAll('[data-scroll]').forEach(button => {
+        button.addEventListener('click', () => {
+          const target = document.getElementById(button.dataset.scroll);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+
+      projectDescription.addEventListener('input', event => {
+        state.description = event.target.value;
+      });
+
+      commissionForm.addEventListener('submit', event => {
+        event.preventDefault();
+        if (!requireAccount('submit a commission')) {
+          return;
+        }
+
+        const descriptionText = state.description.trim();
+        if (!descriptionText) {
+          alert('Please describe your custom code requirements before submitting.');
+          return;
+        }
+
+        const price = getEstimatedPrice();
+        const newOrder = {
+          id: `COMM-${Math.floor(1000 + Math.random() * 9000)}`,
+          title: `Custom Project (${state.selectedScope})`,
+          type: 'Commission',
+          price,
+          date: new Date().toISOString().split('T')[0],
+          status: 'In Development',
+          progress: 12
+        };
+        state.currentUser.orders.unshift(newOrder);
+        saveAccount(state.currentUser);
+
+        state.description = '';
+        projectDescription.value = '';
+        state.selectedScope = 'medium';
+        state.selectedDelivery = 'standard';
+        state.selectedStack = ['React', 'Node.js'];
+        renderCommissionOptions();
+        renderEstimatedPrice();
+        renderOrders();
+        setTab('orders');
+      });
+
+      loginForm.addEventListener('submit', event => {
+        event.preventDefault();
+        const email = loginEmail.value.trim();
+        const password = loginPassword.value.trim();
+        const accounts = JSON.parse(localStorage.getItem('codeStoreAccounts') || '[]');
+        const user = accounts.find(account => account.email === email && account.password === password);
+        if (!user) {
+          alert('No account found for that email and password.');
+          return;
+        }
+        state.currentUser = { ...user, orders: user.orders || [] };
+        saveAccount(state.currentUser);
+        renderAccount();
+        renderOrders();
+        setTab('account');
+      });
+
+      registerForm.addEventListener('submit', event => {
+        event.preventDefault();
+        const name = registerName.value.trim();
+        const email = registerEmail.value.trim();
+        const password = registerPassword.value.trim();
+        if (!name || !email || !password) {
+          alert('Please complete all fields to register.');
+          return;
+        }
+
+        const accounts = JSON.parse(localStorage.getItem('codeStoreAccounts') || '[]');
+        if (accounts.some(account => account.email === email)) {
+          alert('An account with this email already exists.');
+          return;
+        }
+
+        const newUser = {
+          name,
+          email,
+          password,
+          joined: new Date().toISOString().split('T')[0],
+          orders: []
+        };
+        accounts.push(newUser);
+        localStorage.setItem('codeStoreAccounts', JSON.stringify(accounts));
+        state.currentUser = newUser;
+        saveAccount(newUser);
+        renderAccount();
+        renderOrders();
+        setTab('account');
+      });
+
+      logoutBtn.addEventListener('click', () => {
+        state.currentUser = null;
+        localStorage.removeItem('codeStoreAccount');
+        renderAccount();
+      });
+
+      document.querySelectorAll('.auth-toggle button').forEach(button => {
+        button.addEventListener('click', () => setAuthView(button.dataset.authView));
+      });
+
+      supportForm.addEventListener('submit', event => {
+        event.preventDefault();
+        if (!requireAccount('submit support')) {
+          return;
+        }
+
+        const orderId = supportOrderSelect.value;
+        const message = supportMessage.value.trim();
+        if (!message) {
+          alert('Please describe your issue before submitting.');
+          return;
+        }
+
+        const order = getCurrentUserOrders().find(item => item.id === orderId);
+        if (!order) {
+          alert('Please select a valid order.');
+          return;
+        }
+
+        if (supportType.value === 'refund') {
+          if (order.status === 'Refund Pending' || order.status === 'Refunded') {
+            alert('A refund request is already in progress.');
+            return;
+          }
+          order.status = 'Refund Pending';
+        } else if (supportType.value === 'cancel') {
+          if (order.status === 'Cancelled') {
+            alert('This order is already cancelled.');
+            return;
+          }
+          order.status = 'Cancellation Requested';
+        }
+
+        state.supportTickets.unshift({
+          id: `SUP-${Math.floor(1000 + Math.random() * 9000)}`,
+          orderId: order.id,
+          type: supportType.value,
+          message,
+          status: 'Open',
+          date: new Date().toISOString().split('T')[0]
+        });
+
+        supportMessage.value = '';
+        renderOrders();
+        renderSupport();
+        setTab('support');
+      });
+
+      closeModalBtn.addEventListener('click', closeModal);
+      modalBackdrop.addEventListener('click', event => {
+        if (event.target === modalBackdrop) {
+          closeModal();
+        }
+      });
+
+      window.addEventListener('DOMContentLoaded', () => {
+        state.currentUser = loadAccount();
+        renderCategoryFilter();
+        renderTabs();
+        renderStore();
+        renderLanguages();
+        renderCommissionOptions();
+        renderEstimatedPrice();
+        renderCart();
+        renderOrders();
+        renderSupport();
+        renderAccount();
+        setAuthView('login');
+        setTab('store');
+      });
+    </script>
+  </body>
+</html>

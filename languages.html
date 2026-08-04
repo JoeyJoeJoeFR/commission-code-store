@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Programming Languages Library</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #07111f;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --accent: #4f46e5;
+        --border: rgba(148, 163, 184, 0.16);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.2), transparent 28%), var(--bg);
+        color: var(--text);
+      }
+      .page { width: min(1200px, calc(100% - 2rem)); margin: 0 auto; padding: 2rem 0 3rem; }
+      .topbar, .card { background: rgba(10, 19, 34, 0.95); border: 1px solid var(--border); border-radius: 1.25rem; box-shadow: 0 20px 60px rgba(2, 6, 23, 0.24); }
+      .topbar { padding: 1.2rem 1.4rem; display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+      .topbar a { color: white; text-decoration: none; background: rgba(79, 70, 229, 0.16); padding: 0.7rem 0.95rem; border-radius: 0.95rem; }
+      .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 1.25rem; }
+      .card { padding: 1rem; }
+      .card h3 { margin: 0 0 0.4rem; }
+      .card p { color: var(--muted); line-height: 1.6; margin: 0; }
+      .pill { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; padding: 0.45rem 0.7rem; border-radius: 999px; background: rgba(79, 70, 229, 0.15); color: #c7d2fe; margin-bottom: 0.8rem; }
+      .hero { padding: 1.2rem; margin-bottom: 1rem; background: linear-gradient(135deg, rgba(79, 70, 229, 0.16), rgba(6, 182, 212, 0.12)); border: 1px solid var(--border); border-radius: 1.25rem; }
+      .hero h2 { margin: 0 0 0.5rem; }
+      .hero p { color: var(--muted); margin: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <section class="topbar">
+        <div>
+          <h1 style="margin: 0;">Programming Languages Library</h1>
+          <p style="margin: 0.3rem 0 0; color: var(--muted);">Browse starter resources by language for your next project.</p>
+        </div>
+        <a href="index.html">← Back to Store</a>
+      </section>
+
+      <section class="hero">
+        <h2>Choose your language</h2>
+        <p>Explore coding packs, tutorials, and project starter kits for PHP, Java, JavaScript, C, C++, and C#.</p>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <span class="pill">PHP</span>
+          <h3>PHP Projects</h3>
+          <p>Starter templates for CMS modules, admin panels, APIs, and form processing.</p>
+        </article>
+        <article class="card">
+          <span class="pill">Java</span>
+          <h3>Java Applications</h3>
+          <p>Console apps, desktop utilities, and backend service foundations.</p>
+        </article>
+        <article class="card">
+          <span class="pill">JavaScript</span>
+          <h3>JS Frontend Kits</h3>
+          <p>Interactive UI components, dashboards, and browser-based automation scripts.</p>
+        </article>
+        <article class="card">
+          <span class="pill">C</span>
+          <h3>C Systems Starter</h3>
+          <p>Low-level utilities, data structures, and algorithm practice templates.</p>
+        </article>
+        <article class="card">
+          <span class="pill">C++</span>
+          <h3>C++ Toolkit</h3>
+          <p>Competitive programming templates, game logic, and performance-focused builds.</p>
+        </article>
+        <article class="card">
+          <span class="pill">C#</span>
+          <h3>C# Solutions</h3>
+          <p>Windows desktop apps, Unity-friendly code, and .NET service blueprints.</p>
+        </article>
+      </section>
+    </div>
+  </body>
+</html>
