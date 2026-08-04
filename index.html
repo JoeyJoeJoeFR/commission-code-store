@@ -32,6 +32,16 @@
               <input type="password" id="loginPassword" required />
             </div>
           </div>
+          <div class="field-row">
+            <div>
+              <label>Sign in as</label>
+              <select id="loginRole">
+                <option value="buyer">Buyer</option>
+                <option value="staff">Staff</option>
+                <option value="it">IT Department</option>
+              </select>
+            </div>
+          </div>
           <button type="submit">Sign In</button>
         </form>
         <form id="registerForm" class="form-group" hidden>
@@ -49,6 +59,14 @@
             <div>
               <label>Password</label>
               <input type="password" id="registerPassword" required />
+            </div>
+            <div>
+              <label>Create account as</label>
+              <select id="registerRole">
+                <option value="buyer">Buyer</option>
+                <option value="staff">Staff</option>
+                <option value="it">IT Department</option>
+              </select>
             </div>
           </div>
           <button type="submit">Create your account</button>

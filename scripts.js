@@ -180,9 +180,11 @@ const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
 const loginEmail = document.getElementById('loginEmail');
 const loginPassword = document.getElementById('loginPassword');
+const loginRole = document.getElementById('loginRole');
 const registerName = document.getElementById('registerName');
 const registerEmail = document.getElementById('registerEmail');
 const registerPassword = document.getElementById('registerPassword');
+const registerRole = document.getElementById('registerRole');
 const accountStatus = document.getElementById('accountStatus');
 const authGate = document.getElementById('authGate');
 const pageContainer = document.querySelector('.page');
@@ -280,7 +282,7 @@ function buildWorkflowOrder(orderData, source) {
 function saveAccount(user) {
   localStorage.setItem('codeStoreAccount', JSON.stringify(user));
   const accounts = JSON.parse(localStorage.getItem('codeStoreAccounts') || '[]');
-  const existingIndex = accounts.findIndex(account => account.email === user.email);
+  const existingIndex = accounts.findIndex(account => account.email === user.email && account.role === user.role);
   if (existingIndex >= 0) {
     accounts[existingIndex] = user;
   } else {
@@ -296,6 +298,7 @@ function loadAccount() {
     const user = JSON.parse(raw);
     return {
       ...user,
+      role: user.role || 'buyer',
       orders: user.orders || [],
       supportTickets: user.supportTickets || [],
       cart: user.cart || []
@@ -303,6 +306,39 @@ function loadAccount() {
   } catch (error) {
     return null;
   }
+}
+
+function ensureDemoAccounts() {
+  const accounts = JSON.parse(localStorage.getItem('codeStoreAccounts') || '[]');
+  const demoAccounts = [
+    { name: 'Staff Manager', email: 'staff@codestore.com', password: 'staff123', role: 'staff', joined: new Date().toISOString().split('T')[0], orders: [], supportTickets: [], cart: [] },
+    { name: 'IT Lead', email: 'it@codestore.com', password: 'it123', role: 'it', joined: new Date().toISOString().split('T')[0], orders: [], supportTickets: [], cart: [] }
+  ];
+
+  demoAccounts.forEach(demoAccount => {
+    const exists = accounts.some(account => account.email === demoAccount.email && account.role === demoAccount.role);
+    if (!exists) {
+      accounts.push(demoAccount);
+    }
+  });
+
+  localStorage.setItem('codeStoreAccounts', JSON.stringify(accounts));
+}
+
+function getVisibleTabs() {
+  if (!state.currentUser) {
+    return tabs.filter(tab => !['staff', 'it'].includes(tab.id));
+  }
+
+  if (state.currentUser.role === 'staff') {
+    return tabs.filter(tab => ['staff', 'account', 'support'].includes(tab.id));
+  }
+
+  if (state.currentUser.role === 'it') {
+    return tabs.filter(tab => ['it', 'account', 'support'].includes(tab.id));
+  }
+
+  return tabs.filter(tab => !['staff', 'it'].includes(tab.id));
 }
 
 function requireAccount(actionLabel) {
@@ -315,29 +351,33 @@ function requireAccount(actionLabel) {
 }
 
 function setTab(tabId) {
-  currentTab = tabId;
-  const tabData = tabs.find(tab => tab.id === tabId);
+  const visibleTabs = getVisibleTabs();
+  const availableTabIds = visibleTabs.map(tab => tab.id);
+  const safeTabId = availableTabIds.includes(tabId) ? tabId : availableTabIds[0] || 'account';
+  currentTab = safeTabId;
+  const tabData = visibleTabs.find(tab => tab.id === safeTabId);
   if (!tabData) return;
   activeTabTitle.textContent = tabData.title;
   activeTabSubtitle.textContent = tabData.subtitle;
   orderCount.textContent = `${getCurrentUserOrders().length} orders`;
 
   tabButtons.querySelectorAll('.tab').forEach(button => {
-    button.classList.toggle('active', button.dataset.tab === tabId);
+    button.classList.toggle('active', button.dataset.tab === safeTabId);
   });
 
-  storePanel.hidden = tabId !== 'store';
-  commissionPanel.hidden = tabId !== 'commission';
-  ordersPanel.hidden = tabId !== 'orders';
-  languagesPanel.hidden = tabId !== 'languages';
-  staffPanel.hidden = tabId !== 'staff';
-  itPanel.hidden = tabId !== 'it';
-  accountPanel.hidden = tabId !== 'account';
-  supportPanel.hidden = tabId !== 'support';
+  storePanel.hidden = safeTabId !== 'store';
+  commissionPanel.hidden = safeTabId !== 'commission';
+  ordersPanel.hidden = safeTabId !== 'orders';
+  languagesPanel.hidden = safeTabId !== 'languages';
+  staffPanel.hidden = safeTabId !== 'staff';
+  itPanel.hidden = safeTabId !== 'it';
+  accountPanel.hidden = safeTabId !== 'account';
+  supportPanel.hidden = safeTabId !== 'support';
 }
 
 function renderTabs() {
-  tabButtons.innerHTML = tabs
+  const visibleTabs = getVisibleTabs();
+  tabButtons.innerHTML = visibleTabs
     .map(tab => `<button class="tab${tab.id === currentTab ? ' active' : ''}" data-tab="${tab.id}">${tab.title}</button>`)
     .join('');
 
@@ -619,8 +659,10 @@ function renderAccount() {
   }
 
   accountStatus.textContent = `Signed in as ${user.name}`;
+  const roleLabel = user.role === 'staff' ? 'Staff' : user.role === 'it' ? 'IT Department' : 'Buyer';
   accountInfo.innerHTML = `
     <strong>Email:</strong> ${user.email}<br />
+    <strong>Role:</strong> ${roleLabel}<br />
     <strong>Member since:</strong> ${user.joined}<br />
     <strong>Orders:</strong> ${getCurrentUserOrders().length}
   `;
@@ -1048,14 +1090,16 @@ loginForm.addEventListener('submit', event => {
   event.preventDefault();
   const email = loginEmail.value.trim();
   const password = loginPassword.value.trim();
+  const role = loginRole.value;
   const accounts = JSON.parse(localStorage.getItem('codeStoreAccounts') || '[]');
-  const user = accounts.find(account => account.email === email && account.password === password);
+  const user = accounts.find(account => account.email === email && account.password === password && (account.role || 'buyer') === role);
   if (!user) {
     alert('No account found for that email and password.');
     return;
   }
   state.currentUser = {
     ...user,
+    role: user.role || 'buyer',
     orders: user.orders || [],
     supportTickets: user.supportTickets || [],
     cart: user.cart || []
@@ -1074,11 +1118,12 @@ loginForm.addEventListener('submit', event => {
     state.cart = [];
   }
   saveAccount(state.currentUser);
+  renderTabs();
   renderAccount();
   renderOrders();
   renderCart();
   setAuthGate(false);
-  setTab('store');
+  setTab(state.currentUser.role === 'staff' ? 'staff' : state.currentUser.role === 'it' ? 'it' : 'store');
 });
 
 registerForm.addEventListener('submit', event => {
@@ -1086,6 +1131,7 @@ registerForm.addEventListener('submit', event => {
   const name = registerName.value.trim();
   const email = registerEmail.value.trim();
   const password = registerPassword.value.trim();
+  const role = registerRole.value;
   if (!name || !email || !password) {
     alert('Please complete all fields to register.');
     return;
@@ -1101,6 +1147,7 @@ registerForm.addEventListener('submit', event => {
     name,
     email,
     password,
+    role,
     joined: new Date().toISOString().split('T')[0],
     orders: [],
     supportTickets: [],
@@ -1114,16 +1161,18 @@ registerForm.addEventListener('submit', event => {
     state.cart = [];
   }
   saveAccount(state.currentUser);
+  renderTabs();
   renderAccount();
   renderOrders();
   renderCart();
   setAuthGate(false);
-  setTab('store');
+  setTab(state.currentUser.role === 'staff' ? 'staff' : state.currentUser.role === 'it' ? 'it' : 'store');
 });
 
 logoutBtn.addEventListener('click', () => {
   state.currentUser = null;
   localStorage.removeItem('codeStoreAccount');
+  renderTabs();
   renderAccount();
   setAuthGate(true);
   setAuthView('login');
@@ -1195,6 +1244,7 @@ modalBackdrop.addEventListener('click', event => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
+  ensureDemoAccounts();
   state.currentUser = loadAccount();
   renderCategoryFilter();
   renderTabs();
