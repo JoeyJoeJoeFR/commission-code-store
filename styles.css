@@ -687,17 +687,34 @@ textarea {
   display: none !important;
 }
 
+body.locked {
+  overflow: hidden;
+  height: 100vh;
+}
+
 .auth-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 2rem 1rem;
+  background: rgba(2, 6, 23, 1);
+}
+
+.auth-gate[hidden],
+.auth-gate[hidden] * {
+  display: none !important;
+  visibility: hidden !important;
 }
 
 .auth-gate-card {
+  position: relative;
+  z-index: 1;
   width: min(560px, 100%);
   border-radius: 1.75rem;
-  background: rgba(8, 14, 26, 0.96);
+  background: rgba(8, 14, 26, 0.98);
   border: 1px solid rgba(148, 163, 184, 0.18);
   box-shadow: 0 35px 120px rgba(0, 0, 0, 0.32);
   padding: 2rem;
@@ -712,6 +729,20 @@ textarea {
 
 .auth-gate .auth-toggle {
   justify-content: center;
+  gap: 1rem;
+}
+
+.auth-gate .auth-toggle button {
+  flex: 1 1 100%;
+}
+
+.auth-gate .auth-toggle button:not(.active) {
+  display: none !important;
+}
+
+.auth-gate #registerForm[hidden],
+.auth-gate #loginForm[hidden] {
+  display: none !important;
 }
 
 .auth-gate .mini-action,
@@ -733,17 +764,29 @@ textarea {
   box-shadow: 0 16px 35px rgba(124, 58, 237, 0.14);
 }
 
-.auth-gate .mini-action {
-  flex: 1 1 45%;
-  min-width: 150px;
-}
-
 .auth-gate .field-row {
   grid-template-columns: 1fr;
 }
 
 .auth-gate .field-row > div {
   width: 100%;
+}
+
+.auth-gate .switch-mode {
+  margin-top: 1rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.auth-gate .switch-mode button {
+  border: none;
+  background: transparent;
+  color: #a5b4fc;
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
 }
 
 .modal {

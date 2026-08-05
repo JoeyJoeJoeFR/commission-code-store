@@ -186,6 +186,7 @@ const registerEmail = document.getElementById('registerEmail');
 const registerPassword = document.getElementById('registerPassword');
 const registerRole = document.getElementById('registerRole');
 const accountStatus = document.getElementById('accountStatus');
+const authModeLabel = document.getElementById('authModeLabel');
 const authGate = document.getElementById('authGate');
 const pageContainer = document.querySelector('.page');
 const accountInfo = document.getElementById('accountInfo');
@@ -671,9 +672,7 @@ function renderAccount() {
 
 function setAuthView(view) {
   state.authView = view;
-  document.querySelectorAll('#authGate .auth-toggle button, .account-grid .auth-toggle button').forEach(button => {
-    button.classList.toggle('active', button.dataset.authView === view);
-  });
+  authModeLabel.textContent = view === 'login' ? 'Sign In' : 'Create Account';
   loginForm.hidden = view !== 'login';
   registerForm.hidden = view !== 'register';
 }
@@ -1090,9 +1089,8 @@ loginForm.addEventListener('submit', event => {
   event.preventDefault();
   const email = loginEmail.value.trim();
   const password = loginPassword.value.trim();
-  const role = loginRole.value;
   const accounts = JSON.parse(localStorage.getItem('codeStoreAccounts') || '[]');
-  const user = accounts.find(account => account.email === email && account.password === password && (account.role || 'buyer') === role);
+  const user = accounts.find(account => account.email === email && account.password === password);
   if (!user) {
     alert('No account found for that email and password.');
     return;
@@ -1178,7 +1176,7 @@ logoutBtn.addEventListener('click', () => {
   setAuthView('login');
 });
 
-document.querySelectorAll('.auth-toggle button').forEach(button => {
+document.querySelectorAll('#authGate .switch-mode button').forEach(button => {
   button.addEventListener('click', () => setAuthView(button.dataset.authView));
 });
 
@@ -1243,7 +1241,7 @@ modalBackdrop.addEventListener('click', event => {
   }
 });
 
-window.addEventListener('DOMContentLoaded', () => {
+function initApp() {
   ensureDemoAccounts();
   state.currentUser = loadAccount();
   renderCategoryFilter();
@@ -1263,7 +1261,13 @@ window.addEventListener('DOMContentLoaded', () => {
   setTab('store');
   setAuthGate(!state.currentUser);
   initNightSky();
-});
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 function initNightSky() {
   const sky = document.getElementById('night-sky');
